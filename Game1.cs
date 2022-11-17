@@ -55,6 +55,9 @@ namespace FlappyMeatball
             ballPosition = new Vector2(_graphics.PreferredBackBufferWidth / 4,
             _graphics.PreferredBackBufferHeight / 2);
 
+            // Initializes the custom devcade controls
+            Devcade.Input.Initialize();
+
             base.Initialize();
         }
 
@@ -78,7 +81,17 @@ namespace FlappyMeatball
             var kstate = Keyboard.GetState();
             
             //When space is clicked, jumps and waits until space is let go to jump again
-            if (kstate.IsKeyDown(Keys.Space) && !jumpCancel)
+            // haha look at all these controls
+            if ((kstate.IsKeyDown(Keys.Space) 
+                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.A1)
+                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.A2)
+                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.A3)
+                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.A4)
+                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.B1)
+                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.B2)
+                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.B3)
+                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.B4)) 
+                && !jumpCancel)
             {
                 ballVelocity = -18;
                 jumpCancel = true;
@@ -98,13 +111,31 @@ namespace FlappyMeatball
             }
 
             //Allows user to jump again
-            if (kstate.IsKeyUp(Keys.Space) && jumpCancel)
+            if ((kstate.IsKeyUp(Keys.Space)
+                && GamePad.GetState(1).IsButtonUp((Buttons)Devcade.Input.ArcadeButtons.A1)
+                && GamePad.GetState(1).IsButtonUp((Buttons)Devcade.Input.ArcadeButtons.A2)
+                && GamePad.GetState(1).IsButtonUp((Buttons)Devcade.Input.ArcadeButtons.A3)
+                && GamePad.GetState(1).IsButtonUp((Buttons)Devcade.Input.ArcadeButtons.A4)
+                && GamePad.GetState(1).IsButtonUp((Buttons)Devcade.Input.ArcadeButtons.B1)
+                && GamePad.GetState(1).IsButtonUp((Buttons)Devcade.Input.ArcadeButtons.B2)
+                && GamePad.GetState(1).IsButtonUp((Buttons)Devcade.Input.ArcadeButtons.B3)
+                && GamePad.GetState(1).IsButtonUp((Buttons)Devcade.Input.ArcadeButtons.B4))
+                && jumpCancel)
             {
                 jumpCancel = false;
             }
 
             //Starts a new game
-            if (kstate.IsKeyDown(Keys.R) && gameLost)
+            if ((kstate.IsKeyDown(Keys.Space)
+                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.A1)
+                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.A2)
+                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.A3)
+                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.A4)
+                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.B1)
+                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.B2)
+                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.B3)
+                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.B4))
+                && gameLost)
             {
                 milisecondCounter = 0;
                 score = -1;
@@ -147,7 +178,7 @@ namespace FlappyMeatball
 
             //update score
             milisecondCounter += (float)(0.001 * gameTime.ElapsedGameTime.TotalMilliseconds);
-            if (milisecondCounter >= 2)
+            if (milisecondCounter >= 2 && !gameLost)
             {
                 milisecondCounter -= 2;
                 score++;
@@ -165,6 +196,9 @@ namespace FlappyMeatball
                 score = -1;
                 milisecondCounter = 0;
             }
+
+            // Updates Devcade Inputs
+            Devcade.Input.Update();
 
             base.Update(gameTime);
         }
