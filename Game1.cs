@@ -30,8 +30,8 @@ namespace FlappyMeatball
         float spinCounter = 0f;
 
         //change aspect ratio
-        int consoleHeight = 1000;
-        int consoleWidth = 1000*9/21;
+        int consoleHeight;
+        int consoleWidth;
         
         //uhh this makes the code work
         private GraphicsDeviceManager _graphics;
@@ -44,16 +44,31 @@ namespace FlappyMeatball
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = false;
-            _graphics.PreferredBackBufferWidth =  consoleWidth;
-            _graphics.PreferredBackBufferHeight = consoleHeight;
-            _graphics.ApplyChanges();
+            
         }
 
         //it is important that this is hear i think
         protected override void Initialize()
         {
+            // Set window size if running debug (in release it will be fullscreen)
+            #region
+#if DEBUG
+            _graphics.PreferredBackBufferWidth = 200*9/21;
+            _graphics.PreferredBackBufferHeight = 200;
+            _graphics.ApplyChanges();
+#else
+			_graphics.PreferredBackBufferWidth = GraphicsDevice.DisplayMode.Width;
+			_graphics.PreferredBackBufferHeight = GraphicsDevice.DisplayMode.Height;
+			_graphics.ApplyChanges();
+#endif
+            #endregion
+
+            consoleWidth = _graphics.PreferredBackBufferWidth;
+            consoleHeight = _graphics.PreferredBackBufferHeight;
+
             ballPosition = new Vector2(_graphics.PreferredBackBufferWidth / 4,
             _graphics.PreferredBackBufferHeight / 2);
+
 
             // Initializes the custom devcade controls
             Devcade.Input.Initialize();
@@ -75,7 +90,10 @@ namespace FlappyMeatball
         protected override void Update(GameTime gameTime)
         {
             //exits game if escape button pressed
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed 
+                || Keyboard.GetState().IsKeyDown(Keys.Escape)
+                || (Devcade.Input.GetButton(1,Devcade.Input.ArcadeButtons.Menu) 
+                && Devcade.Input.GetButton(2, Devcade.Input.ArcadeButtons.Menu)))
                 Exit();
 
             var kstate = Keyboard.GetState();
