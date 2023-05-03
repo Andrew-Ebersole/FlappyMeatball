@@ -17,8 +17,6 @@ namespace FlappyMeatball
         Texture2D pipe;
         Vector2 ballPosition;
         float ballVelocity;
-        bool gameRunning = false;
-        bool gameLost = false;
         int points = 0;
         private SpriteFont arial;
         int highScore = 0;
@@ -28,6 +26,17 @@ namespace FlappyMeatball
         float pipeX;
         Random rng = new Random();
         float spinCounter = 0f;
+        string initials;
+        int selectedInitial;
+        bool keysPressed;
+        public enum Background
+        {
+            Title,
+            Game,
+            Lose,
+            NewHighscore
+        }
+        private Background background;
 
         //change aspect ratio
         int consoleHeight;
@@ -37,6 +46,9 @@ namespace FlappyMeatball
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
         private SpriteFont _font;
+
+        Save highscores;
+        bool didScoresUpdate;
 
         //set the Aspect ratio and others
         public Game1()
@@ -53,8 +65,8 @@ namespace FlappyMeatball
             // Set window size if running debug (in release it will be fullscreen)
             #region
 #if DEBUG
-            _graphics.PreferredBackBufferWidth = 200*9/21;
-            _graphics.PreferredBackBufferHeight = 200;
+            _graphics.PreferredBackBufferWidth = 1440*9/21;
+            _graphics.PreferredBackBufferHeight = 1440;
             _graphics.ApplyChanges();
 #else
 			_graphics.PreferredBackBufferWidth = GraphicsDevice.DisplayMode.Width;
@@ -69,9 +81,15 @@ namespace FlappyMeatball
             ballPosition = new Vector2(_graphics.PreferredBackBufferWidth / 4,
             _graphics.PreferredBackBufferHeight / 2);
 
+            highscores = new Save();
 
             // Initializes the custom devcade controls
             Devcade.Input.Initialize();
+            background = Background.Title;
+            didScoresUpdate = false;
+            initials = "AAA";
+            selectedInitial = 0;
+            keysPressed = false;
 
             base.Initialize();
         }
@@ -104,30 +122,42 @@ namespace FlappyMeatball
                 || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.A1)
                 || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.A2)
                 || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.A3)
-                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.A4)
-                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.B1)
-                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.B2)
-                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.B3)
-                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.B4)) 
+                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.A4)) 
                 && !jumpCancel)
             {
                 ballVelocity = -18;
                 jumpCancel = true;
-                if (gameRunning == false && !gameLost)
+                if (background == Background.Title)
                 {
-                    gameRunning = true;
-                    gameLost = false;
+                    background = Background.Game;
                     milisecondCounter = 0;
                     score = -1;
-                }  
+                } 
+                if (background == Background.Lose)
+                {
+                    milisecondCounter = 0;
+                    background = Background.Title;
+                    ballPosition.Y = consoleHeight / 2;
+                }
             }
-
-            //Checks highscore
-            if (score > highScore)
+            if ((kstate.IsKeyDown(Keys.Enter)
+                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.B1)
+                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.B2)
+                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.B3)
+                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.B4))
+                && !jumpCancel)
             {
-                highScore = score;
+                if (background == Background.NewHighscore)
+                {
+                    // Enter current initials and return to title screen                    
+                    background = Background.Title;
+                    if (didScoresUpdate != true)
+                    {
+                        highscores.UpdateHighscores(score, initials);
+                        didScoresUpdate = true;
+                    }
+                }
             }
-
             //Allows user to jump again
             if ((kstate.IsKeyUp(Keys.Space)
                 && GamePad.GetState(1).IsButtonUp((Buttons)Devcade.Input.ArcadeButtons.A1)
@@ -143,31 +173,12 @@ namespace FlappyMeatball
                 jumpCancel = false;
             }
 
-            //Starts a new game
-            if ((kstate.IsKeyDown(Keys.Space)
-                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.A1)
-                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.A2)
-                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.A3)
-                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.A4)
-                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.B1)
-                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.B2)
-                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.B3)
-                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.B4))
-                && gameLost)
-            {
-                milisecondCounter = 0;
-                score = -1;
-                gameLost = false;
-                ballPosition.Y = consoleHeight / 2;
-            }
 
             //If meatball hits the ceiling it stops and if  it hits the ground it loses
-            if (gameRunning && ballPosition.Y > consoleHeight - meatball.Height*(consoleHeight / 8000f))
+            if (background == Background.Game && ballPosition.Y > consoleHeight - meatball.Height*(consoleHeight / 8000f))
             {
-                gameRunning = false;
-                gameLost = true;
+                background = Background.Lose;
                 ballPosition.Y = consoleHeight/2;
-                score = -1;
                 milisecondCounter = 0;
             }
             else if (ballPosition.Y < meatball.Height*(consoleHeight / 8000f))
@@ -187,8 +198,9 @@ namespace FlappyMeatball
             }
 
             //Updates the ball and pipe 
-            if (gameRunning)
+            if (background == Background.Game)
             {
+                didScoresUpdate = false;
                 ballPosition.Y += ballVelocity * (float)(consoleHeight * 0.00006 * gameTime.ElapsedGameTime.TotalMilliseconds);
                 spinCounter += 0.003f * (float)gameTime.ElapsedGameTime.TotalMilliseconds;
                 pipeX = consoleWidth - ((milisecondCounter * consoleWidth));
@@ -196,7 +208,7 @@ namespace FlappyMeatball
 
             //update score
             milisecondCounter += (float)(0.001 * gameTime.ElapsedGameTime.TotalMilliseconds);
-            if (milisecondCounter >= 2 && !gameLost)
+            if (milisecondCounter >= 2 && background == Background.Game)
             {
                 milisecondCounter -= 2;
                 score++;
@@ -205,16 +217,93 @@ namespace FlappyMeatball
             }
 
             //If the ball position overlaps with pipe the game ends
-            if (score >= 0 && pipeX <= consoleWidth/42 && pipeX >= consoleWidth/-4 
+            if (background == Background.Game && score >= 0 && pipeX <= consoleWidth/42 && pipeX >= consoleWidth/-4 
                 && (ballPosition.Y < pipeHeight - consoleHeight/4.2f || ballPosition.Y > pipeHeight+0.03*consoleHeight))
             {
-                gameRunning = false;
-                gameLost = true;
-                ballPosition.Y = _graphics.PreferredBackBufferHeight - meatball.Height * (consoleHeight / 8000f);
-                score = -1;
+                background = Background.Lose;
+                ballPosition.Y = consoleHeight / 2;
                 milisecondCounter = 0;
             }
 
+            if (background == Background.Lose)
+            {
+                
+                // Checks if got a highscore and prompts user to enter initials if so
+                if (highscores.checkIfHighscores(score))
+                {
+                    background = Background.NewHighscore;
+                    initials = "AAA";
+                    selectedInitial = 0;
+                }
+            }
+
+            // makes it so holding down key only counts as one press
+            if (kstate.IsKeyUp(Keys.Up) && kstate.IsKeyUp(Keys.Down) && kstate.IsKeyUp(Keys.Left) && kstate.IsKeyUp(Keys.Right))
+            {
+                keysPressed = false;
+            }
+
+            // Changes initials when entering new highscore
+            if (background == Background.NewHighscore && !keysPressed)
+            {
+                
+
+                //Move Up or Down
+                //Change the character up or down but clamps so it is only letters.
+                char changedInitial = initials[selectedInitial];
+                
+                if (kstate.IsKeyDown(Keys.Up)
+                    || Devcade.Input.GetButtonDown(1, Devcade.Input.ArcadeButtons.StickUp)
+                    || Devcade.Input.GetButtonDown(2, Devcade.Input.ArcadeButtons.StickUp))
+                {
+                    keysPressed = true;
+                    if (changedInitial != 'A')
+                    {
+                        changedInitial--;
+                    }
+                }
+                if (kstate.IsKeyDown(Keys.Down)
+                    || Devcade.Input.GetButtonDown(1, Devcade.Input.ArcadeButtons.StickDown)
+                    || Devcade.Input.GetButtonDown(2, Devcade.Input.ArcadeButtons.StickDown))
+                {
+                    keysPressed = true;
+                    if (changedInitial != 'Z')
+                    {
+                        changedInitial++;
+                    }
+                }
+
+                //changed the intials to incorporate the changed letter
+                string oldInitials = initials;
+                initials = "";
+                for (int i = 0; i < 3; i++)
+                {
+                    if (i == selectedInitial)
+                    {
+                        initials += changedInitial;
+                    } else
+                    {
+                        initials += oldInitials[i];
+                    }
+                }
+
+                //Change initials left or right
+                if (kstate.IsKeyDown(Keys.Left)
+                    || Devcade.Input.GetButtonDown(1, Devcade.Input.ArcadeButtons.StickLeft)
+                    || Devcade.Input.GetButtonDown(2, Devcade.Input.ArcadeButtons.StickLeft))
+                {
+                    keysPressed = true;
+                    selectedInitial--;
+                }
+                if (kstate.IsKeyDown(Keys.Right)
+                    || Devcade.Input.GetButtonDown(1, Devcade.Input.ArcadeButtons.StickRight)
+                    || Devcade.Input.GetButtonDown(2, Devcade.Input.ArcadeButtons.StickRight))
+                {
+                    keysPressed = true;
+                    selectedInitial++;
+                }
+                selectedInitial = Math.Clamp(selectedInitial, 0, 2);
+            }
             // Updates Devcade Inputs
             Devcade.Input.Update();
 
@@ -228,9 +317,9 @@ namespace FlappyMeatball
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             _spriteBatch.Begin();
-            
+
             //Displays title screen
-            if (gameRunning == false & gameLost == false)
+            if (background == Background.Title)
             {
                 _spriteBatch.DrawString(_font,
                     "Press" +
@@ -241,14 +330,16 @@ namespace FlappyMeatball
                 score = -1;
 
                 _spriteBatch.DrawString(_font,
-                    $"High " +
-                    "\nScore" +
-                    $"\n{highScore} pts",
-                    new Vector2((consoleWidth / 2) - consoleWidth / 2.1f, consoleHeight - consoleHeight *3 / 10), Color.Black);
+                    $"{highscores.getInitials(0)}: {highscores.getHighscore(0)}" +
+                    $"\n{highscores.getInitials(1)}: {highscores.getHighscore(1)}" +
+                    $"\n{highscores.getInitials(2)}: {highscores.getHighscore(2)}" +
+                    $"\n{highscores.getInitials(3)}: {highscores.getHighscore(3)}" +
+                    $"\n{highscores.getInitials(4)}: {highscores.getHighscore(4)}",
+                    new Vector2((consoleWidth / 2) - consoleWidth / 2.1f, consoleHeight - consoleHeight *4 / 10), Color.Black);
             }
 
             //Displays meatball
-            if (gameLost == false)
+            if (background == Background.Title || background == Background.Game)
             {
 
                 _spriteBatch.Draw(
@@ -265,7 +356,7 @@ namespace FlappyMeatball
             }
 
             //Displays pipes
-            if (score >= 0 && gameLost == false && gameRunning == true)
+            if (score >= 0 && background == Background.Game)
             {
                 _spriteBatch.Draw(
                     pipe,
@@ -293,13 +384,13 @@ namespace FlappyMeatball
             }
 
             //Displays Score
-            if (gameLost == false && gameRunning == true && score >= 0)
+            if (background == Background.Game && score >= 0)
             {
                 _spriteBatch.DrawString(_font,
                     "Score" +
                     $"\n{score}",
                     new Vector2(consoleWidth / 2 - (consoleWidth * 200/420), 0), Color.Black);
-            } else if (gameLost == false && gameRunning == true)
+            } else if (background == Background.Game)
             {
                 _spriteBatch.DrawString(_font,
                     "Score" +
@@ -308,7 +399,7 @@ namespace FlappyMeatball
             }
 
             //Displays Restart Screen
-            if (gameLost)
+            if (background == Background.Lose)
             {
                 _spriteBatch.DrawString(_font,
                     "You lose!" +
@@ -317,7 +408,70 @@ namespace FlappyMeatball
                     "\nto restart",
                     new Vector2(_graphics.PreferredBackBufferWidth / 2 - (consoleWidth * 200/420), 
                     _graphics.PreferredBackBufferHeight / 2 - (consoleHeight * 200/1000)), Color.Black);
+
             }
+
+            // Display highscores screen
+            if (background == Background.NewHighscore)
+            {
+                // New Highscore
+                _spriteBatch.DrawString(_font,
+                    "New" +
+                    "\nHighscore!",
+                    new Vector2(_graphics.PreferredBackBufferWidth / 2 - (consoleWidth * 200 / 420),
+                    _graphics.PreferredBackBufferHeight / 2 - (consoleHeight * 300 / 1000)), Color.Black);
+
+                // All Initials
+
+                string singleInitial = "";
+                _spriteBatch.DrawString(_font,
+                    singleInitial += initials[0],
+                    new Vector2(_graphics.PreferredBackBufferWidth / 2 - (consoleWidth * 200 / 420),
+                    _graphics.PreferredBackBufferHeight / 2), Color.Black);
+
+                singleInitial = "";
+                _spriteBatch.DrawString(_font,
+                    singleInitial += initials[1],
+                    new Vector2(_graphics.PreferredBackBufferWidth / 2 - (consoleWidth * 150 / 420),
+                    _graphics.PreferredBackBufferHeight / 2), Color.Black);
+                singleInitial = "";
+                _spriteBatch.DrawString(_font,
+                    singleInitial += initials[2],
+                    new Vector2(_graphics.PreferredBackBufferWidth / 2 - (consoleWidth * 100 / 420),
+                    _graphics.PreferredBackBufferHeight / 2), Color.Black);
+
+
+                string highlightedInitial = "";
+                
+                // First Initial
+                if (selectedInitial == 0)
+                {
+                    
+                    _spriteBatch.DrawString(_font,
+                    highlightedInitial += initials[0],
+                    new Vector2(_graphics.PreferredBackBufferWidth / 2 - (consoleWidth * 200 / 420),
+                    _graphics.PreferredBackBufferHeight / 2), Color.Gold);
+                }
+
+                // Second Initial
+                if (selectedInitial == 1)
+                {
+                    _spriteBatch.DrawString(_font,
+                    highlightedInitial += initials[1],
+                    new Vector2(_graphics.PreferredBackBufferWidth / 2 - (consoleWidth * 150 / 420),
+                    _graphics.PreferredBackBufferHeight / 2), Color.Gold);
+                }
+
+                // Third Initial
+                if (selectedInitial == 2)
+                {
+                    _spriteBatch.DrawString(_font,
+                    highlightedInitial += initials[2],
+                    new Vector2(_graphics.PreferredBackBufferWidth / 2 - (consoleWidth * 100 / 420),
+                    _graphics.PreferredBackBufferHeight / 2), Color.Gold);
+                }
+            }
+
             _spriteBatch.End();
 
             base.Draw(gameTime);
