@@ -20,6 +20,9 @@
 /processorParam:TextureFormat=Compressed
 /build:File.spritefont
 
+#begin highscores.txt
+/copy:highscores.txt
+
 #begin meatball.png
 /importer:TextureImporter
 /processor:TextureProcessor

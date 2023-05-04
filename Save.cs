@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -32,13 +33,13 @@ namespace FlappyMeatball
             initials = new string[5];
 
             // If the file does not exist it will create it
-            if (!File.Exists($"highscores"))
+            if (!File.Exists("Content/highscores.txt"))
             {
                 UpdateHighscores(0, "NAN");
             }
             
 
-            StreamReader input = new StreamReader($"highscores");
+            StreamReader input = new StreamReader($"Content/highscores.txt");
             string line = null;
 
             int i = 0;
@@ -91,7 +92,7 @@ namespace FlappyMeatball
                 }
             }
 
-            StreamWriter output = new StreamWriter($"highscores");
+            StreamWriter output = new StreamWriter($"Content/highscores.txt");
             for (int i = 0; i < 5; i++)
             {
                 output.WriteLine($"{initials[i]},{highscores[i]}");
