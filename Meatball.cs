@@ -70,7 +70,7 @@ namespace FlappyMeatball
             // Gravity
             if (velocity < 22 * gameSpeed)
             {
-                velocity += 1.5f*gameSpeed;
+                velocity += 0.09f * gameSpeed * (float)gt.ElapsedGameTime.TotalMilliseconds;
             }
             else
             {

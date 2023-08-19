@@ -61,8 +61,8 @@ namespace FlappyMeatball
             position.X -= (float)gt.ElapsedGameTime.TotalMilliseconds * gameSpeed * 0.3f;
 
             // Update Rectangles
-            pipes[0] = (new Rectangle((int)position.X, (int)position.Y, (int)(window.Width * 0.2f), (int)(window.Height * 0.8f)));
-            pipes[1] = new Rectangle((int)position.X, (int)position.Y - pipes[0].Height - pipeGap, (int)(window.Width * 0.2f), (int)(window.Height * 0.8f));
+            pipes[0] = (new Rectangle((int)position.X, (int)position.Y, (int)(window.Width * 0.25f), (int)(window.Height * 0.8f)));
+            pipes[1] = new Rectangle((int)position.X, (int)position.Y - pipes[0].Height - pipeGap, (int)(window.Width * 0.25f), (int)(window.Height * 0.8f));
         }
 
         /// <summary>

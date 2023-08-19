@@ -1,6 +1,7 @@
 ﻿//Flappy Meatball
 //Andrew Ebersole
 
+using Devcade;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -132,8 +133,8 @@ namespace FlappyMeatball
             //exits game if escape button pressed
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed 
                 || Keyboard.GetState().IsKeyDown(Keys.Escape)
-                || (Devcade.Input.GetButton(1,Devcade.Input.ArcadeButtons.Menu) 
-                && Devcade.Input.GetButton(2, Devcade.Input.ArcadeButtons.Menu)))
+                || (Devcade.Input.GetButtonDown(1,Devcade.Input.ArcadeButtons.Menu) 
+                && Devcade.Input.GetButtonDown(2, Devcade.Input.ArcadeButtons.Menu)))
                 Exit();
 
             currentKS = Keyboard.GetState();
@@ -149,7 +150,7 @@ namespace FlappyMeatball
                     if (PressAnyButton()
                         && !jumpCancel)
                     {
-                        gameSpeed = 1f ;
+                        gameSpeed = 1.3f ;
                         background = Background.Game;
                         score = 0;
                         meatball.Velocity =  -(float)Math.Sqrt(500 * gameSpeed);
@@ -223,7 +224,7 @@ namespace FlappyMeatball
                         if (highscores.checkIfHighscores(score))
                         {
                             background = Background.NewHighscore;
-                            initials = "JKL";
+                            initials = "AAA";
                             selectedInitial = 0;
                         } else
                         {
@@ -262,6 +263,9 @@ namespace FlappyMeatball
                             if (changedInitial != 'A')
                             {
                                 changedInitial--;
+                            } else
+                            {
+                                changedInitial = 'Z';
                             }
                         }
                         if (currentKS.IsKeyDown(Keys.Down)
@@ -272,6 +276,9 @@ namespace FlappyMeatball
                             if (changedInitial != 'Z')
                             {
                                 changedInitial++;
+                            } else
+                            {
+                                changedInitial = 'A';
                             }
                         }
 
@@ -500,22 +507,22 @@ namespace FlappyMeatball
             // Check if any of the buttons are pressed
             if (Keyboard.GetState().IsKeyDown(Keys.Space)
                 && previousKS.IsKeyUp(Keys.Space)
-                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.A1)
-                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.A2)
-                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.A3)
-                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.A4)
-                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.B1)
-                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.B2)
-                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.B3)
-                || GamePad.GetState(1).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.B4)
-                || GamePad.GetState(2).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.A1)
-                || GamePad.GetState(2).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.A2)
-                || GamePad.GetState(2).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.A3)
-                || GamePad.GetState(2).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.A4)
-                || GamePad.GetState(2).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.B1)
-                || GamePad.GetState(2).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.B2)
-                || GamePad.GetState(2).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.B3)
-                || GamePad.GetState(2).IsButtonDown((Buttons)Devcade.Input.ArcadeButtons.B4))
+                || Input.GetButtonDown(1, Input.ArcadeButtons.A1)
+                || Input.GetButtonDown(1, Input.ArcadeButtons.A2)
+                || Input.GetButtonDown(1, Input.ArcadeButtons.A3)
+                || Input.GetButtonDown(1, Input.ArcadeButtons.A4)
+                || Input.GetButtonDown(1, Input.ArcadeButtons.B1)
+                || Input.GetButtonDown(1, Input.ArcadeButtons.B2)
+                || Input.GetButtonDown(1, Input.ArcadeButtons.B3)
+                || Input.GetButtonDown(1, Input.ArcadeButtons.B4)
+                || Input.GetButtonDown(2, Input.ArcadeButtons.A1)
+                || Input.GetButtonDown(2, Input.ArcadeButtons.A2)
+                || Input.GetButtonDown(2, Input.ArcadeButtons.A3)
+                || Input.GetButtonDown(2, Input.ArcadeButtons.A4)
+                || Input.GetButtonDown(2, Input.ArcadeButtons.B1)
+                || Input.GetButtonDown(2, Input.ArcadeButtons.B2)
+                || Input.GetButtonDown(2, Input.ArcadeButtons.B3)
+                || Input.GetButtonDown(2, Input.ArcadeButtons.B4))
             {
                 return true;
             }
